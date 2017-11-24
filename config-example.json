@@ -1,0 +1,15 @@
+{
+  "db" : {
+    "user" : "admin",
+    "password" : "",
+    "host" : "",
+    "port" : "19486",
+    "dbname" : "ofertas"
+  },
+  "forum" : {
+    "vb_login_md5password" : "",
+    "vb_login_md5password_utf" : "",
+    "s" : "",
+    "vb_login_username" : ""
+  }
+}

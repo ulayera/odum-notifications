@@ -1,0 +1,20 @@
+{
+  "name": "odum-notifications",
+  "version": "1.0.0",
+  "description": "Gatilla notificaciones cuando ocurre un ODUM.",
+  "main": "app.js",
+  "dependencies": {
+    "mongodb": "^2.2.33",
+    "node-fetch": "^1.7.3",
+    "xmlhttprequest": "^1.8.0",
+    "cheerio" : "1.0.0-rc.2",
+    "sendmail" : "1.2.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "debug": "node %NODE_DEBUG_OPTION% app.js",
+    "start": "node app.js"
+  },
+  "author": "ulayera",
+  "license": "GPL-3.0"
+}
