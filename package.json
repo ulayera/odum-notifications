@@ -4,11 +4,12 @@
   "description": "Gatilla notificaciones cuando ocurre un ODUM.",
   "main": "app.js",
   "dependencies": {
+    "async": "^2.6.0",
+    "cheerio": "1.0.0-rc.2",
     "mongodb": "^2.2.33",
     "node-fetch": "^1.7.3",
-    "xmlhttprequest": "^1.8.0",
-    "cheerio" : "1.0.0-rc.2",
-    "sendmail" : "1.2.0"
+    "nodemailer": "^4.4.0",
+    "xmlhttprequest": "^1.8.0"
   },
   "devDependencies": {},
   "scripts": {
