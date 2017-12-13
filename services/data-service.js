@@ -1,6 +1,7 @@
 var exports = module.exports = {};
 var envService = require("./env-service.js");
 var MongoClient = require('mongodb').MongoClient, assert = require('assert');
+const console = require("./console.js");
 const sensitive = {
     "db": {
         "user":     envService.getEnv('DB_USER'),
@@ -13,7 +14,6 @@ const sensitive = {
 var url = `mongodb://${sensitive.db.user}:${sensitive.db.password}@${sensitive.db.host}:${sensitive.db.port}/${sensitive.db.dbname}`;
 
 exports.getOdumsByIdlist = function(idList, callback){
-    console.log("exports.getOdumsByIdlist");
     MongoClient.connect(url, function(err, db) {
         assert.equal(null, err);
         var collection = db.collection('odums');

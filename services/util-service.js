@@ -1,6 +1,6 @@
 var exports = module.exports = {};
-var fs = require('fs');
 var cheerio = require("cheerio");
+const console = require("./console.js");
 
 exports.parseaHTMLOdums = function (body) {
     const $ = cheerio.load(body);
@@ -29,11 +29,12 @@ var stripHTML = function (elements, strBuffer) {
         try {
             if (row.type === 'text')
                 strBuffer += row.data;
-            else if (row.type === 'tag' && row.name === 'a')
-                strBuffer += row.attribs.href;
-            else if (row.type === 'tag' && row.name === 'img')
-                strBuffer += row.attribs.src;
-            else if (row.type === 'tag' && row.name === 'div' && row.attribs.class && row.attribs.class.indexOf('spoiler') !== -1)
+            else if (row.type === 'tag' && row.name === 'a') {
+                    strBuffer += '\n' + row.attribs.href + '\n';
+            } else if (row.type === 'tag' && row.name === 'img') {
+                if (row.attribs.src.indexOf('base64') === -1)
+                    strBuffer += '\n' + row.attribs.src + '\n';
+            } else if (row.type === 'tag' && row.name === 'div' && row.attribs.class && row.attribs.class.indexOf('spoiler') !== -1)
                 strBuffer += stripHTML(row.children, strBuffer);
         } catch (e) {
             console.log(e);
@@ -51,7 +52,6 @@ exports.parseaHTMLOdumDetails = function (body) {
 };
 
 exports.toIdArray = function(list) {
-    console.log("exports.toIdArray");
     let result = [];
     for (let i = 0; i < list.length; i++) {
         result.push(list[i]._id);
@@ -60,7 +60,6 @@ exports.toIdArray = function(list) {
 };
 
 exports.mergeOdums = function (arr1, arr2) {
-    console.log("exports.mergeOdums");
     for (let i = 0; i < arr1.length; i++) {
         let contains = false;
         for (let j = 0; j < arr2.length; j++) {
@@ -80,4 +79,14 @@ exports.splitUrl = function (url) {
     urlObj.hostname = url.split("/")[0];
     urlObj.pathname = url.replace(urlObj.hostname, '');
     return urlObj;
+};
+
+exports.compareOdumsById = function (a,b) {
+    var ida = parseInt(a._id);
+    var idb = parseInt(b._id);
+    if (ida > idb)
+        return 1;
+    if (ida < idb)
+        return -1;
+    return 0;
 };

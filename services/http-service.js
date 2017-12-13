@@ -1,7 +1,12 @@
 var exports = module.exports = {};
 const http = require('http');
-const https = require('https');
+const TelegramBot = require('node-telegram-bot-api');
+var envService = require("./env-service.js");
+const token = envService.getEnv('TELEGRAM_BOT_TOKEN');
+const chatId = envService.getEnv('TELEGRAM_BOT_CHAT_ID');
+const bot = new TelegramBot(token, {polling: true});
 const utilService = require("./util-service.js");
+const console = require("./console.js");
 var envService = require("./env-service.js");
 const { URL } = require('url');
 const sensitive = {
@@ -50,7 +55,6 @@ exports.doLogin = function (callback) {
 };
 
 exports.getOdums = function (cb) {
-    console.log("exports.getOdums");
     var result = true;
     var strCookies = "";
     for (var i = 0; i < exports.headers["set-cookie"].length; i++)
@@ -58,7 +62,7 @@ exports.getOdums = function (cb) {
     var options = {
         host: 'www.chw.net',
         port: '80',
-        path: '/foro/ofertas-ultimo-minuto/?pp=100&daysprune=-1&sort=dateline&prefixid=&order=desc',
+        path: '/foro/ofertas-ultimo-minuto/?pp=10&daysprune=-1&sort=dateline&prefixid=&order=desc',
         method: 'GET',
         headers: {
             "accept-language": "en",
@@ -87,7 +91,7 @@ exports.getOdums = function (cb) {
 
 exports.getOdumDetails = function (obj, cb) {
     var urlObj = utilService.splitUrl(obj.url);
-    console.log("exports.getOdums: " + obj.url);
+    console.log("exports.getOdumDetails: " + obj.url);
     var strCookies = "";
     for (var i = 0; i < exports.headers["set-cookie"].length; i++)
         strCookies += exports.headers["set-cookie"][i] + "; ";
@@ -122,22 +126,13 @@ exports.getOdumDetails = function (obj, cb) {
     });
 };
 
-exports.keepAlive = function (cb) {
-    console.log("exports.keepAlive");
-    var options = {
-        host: 'odum-notifications.now.sh',
-        method: 'GET'
-    };
-    var req = https.get(options, function(res) {
-        var bodyChunks = [];
-        res.on('data', function(chunk) {
-            bodyChunks.push(chunk);
-        }).on('end', function() {
-            if (cb)
-                cb(Buffer.concat(bodyChunks).toString('latin1'));
-        });
-    });
-    req.on('error', function(e) {
-        console.log('ERROR: ' + e.message);
-    });
+exports.sendTelegramMessage = function (obj, callback) {
+    console.log("exports.sendTelegramMessage");
+    let body = obj.titulo + '\n' + ((obj.post) ? obj.post : obj.desc);
+    let listChatid = chatId.split(',');
+    for (let i = 0; i < listChatid.length; i++) {
+        bot.sendMessage(listChatid[i], body);
+    }
+    if (callback)
+        callback(obj);
 };

@@ -3,3 +3,4 @@
 *sensitive*.*
 node_modules/
 *.log*
+.env

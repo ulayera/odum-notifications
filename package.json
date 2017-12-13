@@ -6,9 +6,11 @@
   "dependencies": {
     "async": "^2.6.0",
     "cheerio": "1.0.0-rc.2",
+    "dotenv": "^4.0.0",
     "mongodb": "^2.2.33",
     "node-fetch": "^1.7.3",
-    "nodemailer": "^4.4.0",
+    "node-telegram-bot-api": "^0.29.0",
+    "winston": "^2.4.0",
     "xmlhttprequest": "^1.8.0"
   },
   "devDependencies": {},
