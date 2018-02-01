@@ -28,26 +28,35 @@ var stripHTML = function (elements, strBuffer) {
         let row = elements[i];
         try {
             if (row.type === 'text')
-                strBuffer += row.data;
+                strBuffer = concatNoDuplicate(strBuffer, row.data);
             else if (row.type === 'tag' && row.name === 'a') {
-                    strBuffer += '\n' + row.attribs.href + '\n';
+                strBuffer = concatNoDuplicate(strBuffer , '\n' + row.attribs.href + '\n');
             } else if (row.type === 'tag' && row.name === 'img') {
                 if (row.attribs.src.indexOf('base64') === -1)
-                    strBuffer += '\n' + row.attribs.src + '\n';
-            } else if (row.type === 'tag' && row.name === 'div' && row.attribs.class && row.attribs.class.indexOf('spoiler') !== -1)
-                strBuffer += stripHTML(row.children, strBuffer);
+                    strBuffer = concatNoDuplicate(strBuffer , '\n' + row.attribs.src + '\n');
+            } else if (row.children && row.children.length > 0) {
+                strBuffer = stripHTML(row.children, strBuffer);
+            }
         } catch (e) {
             console.log(e);
         }
     }
     return strBuffer;
 };
+var concatNoDuplicate = function(str1, str2) {
+    if (str1.indexOf(str2) < 0)
+        return str1 + str2;
+    else
+        return str1;
+};
 
 exports.parseaHTMLOdumDetails = function (body) {
-    let content = cheerio.load(cheerio.load(body)("div.postbody")[0])("div.content div blockquote");
-    let contentHTML = content.html();
     var strBuffer = "";
-    strBuffer += stripHTML(content[0].children, strBuffer);
+    let subcontent = cheerio.load(body)("div.postbody")[0];
+    if (subcontent) {
+        let content = cheerio.load(subcontent)("div.content div blockquote");
+        strBuffer += stripHTML(content[0].children, strBuffer);
+    }
     return strBuffer;
 };
 

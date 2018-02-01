@@ -26,32 +26,34 @@ const logic = function () {
     const getOdumsLogic = function () {
         httpService.getOdums(function (odumsWeb) {
             dataService.getOdumsByIdlist(utilService.toIdArray(odumsWeb), function (odumsDb) {
-                let odumsMerged = utilService.mergeOdums(odumsWeb, odumsDb).sort(utilService.compareOdumsById);
-                async.eachSeries(odumsMerged, function (elem, callbackAsync) {
-                    var notifyLogic = function (elem, cbArg) {
-                        if (!elem.wasNotified) {
-                            httpService.sendTelegramMessage(elem, function (elem) {
-                                elem.wasNotified = true;
-                                elem.fechaModificacion = new Date();
-                                dataService.saveToDB(elem, function () {
-                                    cbArg(null);
-                                })
+                    let odumsMerged = utilService.mergeOdums(odumsWeb, odumsDb).sort(utilService.compareOdumsById);
+                    async.eachSeries(odumsMerged, function (elem, callbackAsync) {
+                        var notifyLogic = function (elem, cbArg) {
+                            if (!elem.wasNotified) {
+                                httpService.sendTelegramMessage(elem, function (elem) {
+                                    elem.wasNotified = true;
+                                    if (!elem.fechaCreacion)
+                                        elem.fechaCreacion = new Date();
+                                    elem.fechaModificacion = new Date();
+                                    dataService.saveToDB(elem, function () {
+                                        cbArg(null);
+                                    });
+                                });
+                            } else {
+                                cbArg(null);
+                            }
+                        };
+                        if (!elem.post) {
+                            httpService.getOdumDetails(elem, function (elem) {
+                                notifyLogic(elem, callbackAsync);
                             });
                         } else {
-                            cbArg(null);
-                        }
-                    };
-                    if (!elem.post) {
-                        httpService.getOdumDetails(elem, function (elem) {
                             notifyLogic(elem, callbackAsync);
-                        });
-                    } else {
-                        notifyLogic(elem, callbackAsync);
-                    }
-                }, function () {
-                    console.log("Finalizado OK");
-                });
-            })
+                        }
+                    }, function () {
+                        console.log("Finalizado OK");
+                    });
+            });
         });
     };
     if (!httpService.headers)
