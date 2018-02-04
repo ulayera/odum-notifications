@@ -22,7 +22,6 @@ app.listen(port, () => {
 });
 
 const logic = function () {
-    console.log("Iniciando scrapping...");
     const getOdumsLogic = function () {
         httpService.getOdums(function (odumsWeb) {
             dataService.getOdumsByIdlist(utilService.toIdArray(odumsWeb), function (odumsDb) {

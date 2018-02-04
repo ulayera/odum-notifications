@@ -2,12 +2,13 @@ var exports = module.exports = {};
 const http = require('http');
 const TelegramBot = require('node-telegram-bot-api');
 var envService = require("./env-service.js");
+const dataService = require("./data-service.js");
 const token = envService.getEnv('TELEGRAM_BOT_TOKEN');
+const pass = envService.getEnv('REGISTER_PASS');
 const chatId = envService.getEnv('TELEGRAM_BOT_CHAT_ID');
 const bot = new TelegramBot(token, {polling: true});
 const utilService = require("./util-service.js");
 const console = require("./console.js");
-var envService = require("./env-service.js");
 const { URL } = require('url');
 const sensitive = {
     "forum" : {
@@ -126,13 +127,51 @@ exports.getOdumDetails = function (obj, cb) {
     });
 };
 
+bot.onText(/\/start/, (msg) => {
+    const chatId = msg.chat.id;
+    bot.sendMessage(chatId, "Use '/register {pass}' to register.");
+});
+
+bot.onText(/\/register (.+)/, (msg, match) => {
+    const chatId = msg.chat.id;
+    const resp = match[1];
+    const text = "Ahora recibirás notificaciones con ofertas, para desuscribirte escribe /deregister";
+    if (resp === pass)
+        dataService.saveRecipient({
+            "_id" : chatId,
+            "chatId" : chatId,
+            "firstName" : msg.from.first_name,
+            "lastName" : msg.from.last_name
+        }, function () {
+            bot.sendMessage(chatId, "Bienvenido " + msg.from.first_name + " " + msg.from.last_name + "! " + text);
+            console.log("exports.register ok " + chatId);
+        });
+    else {
+        console.log("exports.register nook " + chatId);
+        bot.sendMessage(chatId, "Wrong password.");
+    }
+});
+
+
+bot.onText(/\/deregister/, (msg, match) => {
+    const chatId = msg.chat.id;
+    console.log("exports.deregister " + chatId);
+        dataService.deleteRecipient({
+            "_id" : chatId,
+            "chatId" : chatId
+        }, function () {
+            bot.sendMessage(chatId, "Desuscrito OK");
+        });
+});
+
 exports.sendTelegramMessage = function (obj, callback) {
     console.log("exports.sendTelegramMessage");
     let body = obj.titulo + '\n' + ((obj.post) ? obj.post : obj.desc);
-    let listChatid = chatId.split(',');
-    for (let i = 0; i < listChatid.length; i++) {
-        bot.sendMessage(listChatid[i], body);
-    }
+    dataService.findAllRecipients(null, function ( recipients) {
+        for (var i in recipients)
+            bot.sendMessage(recipients[i].chatId, body);
+    });
     if (callback)
         callback(obj);
 };
+
