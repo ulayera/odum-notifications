@@ -2,6 +2,20 @@ var exports = module.exports = {};
 var cheerio = require("cheerio");
 const console = require("./console.js");
 
+exports.asyncWrapper = async function(func, args) {
+    if (!args) args = [];
+
+    return new Promise((resolve, reject) => {
+        args.unshift(function (value) {
+            if (value instanceof Error)
+                reject(value);
+            else
+                resolve(value);
+        });
+        func.apply(this, args);
+    });
+};
+
 exports.parseaHTMLOdums = function (body) {
     const $ = cheerio.load(body);
     var output = [];

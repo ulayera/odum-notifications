@@ -13,77 +13,79 @@ const sensitive = {
 };
 var url = `mongodb://${sensitive.db.user}:${sensitive.db.password}@${sensitive.db.host}:${sensitive.db.port}/${sensitive.db.dbname}`;
 
-exports.getOdumsByIdlist = function(idList, callback){
+exports.getOdumsByIdlist = function(cb, idList){
     MongoClient.connect(url, function(err, db) {
         assert.equal(null, err);
         var collection = db.collection('odums');
         collection.find({ _id : { $in : idList } }, function (err, result) {
             if (err)
-                console.log(err);
-            else if (callback)
-                result.toArray(function (err, arr) {
-                    callback(arr);
-                });
-        });
-        db.close();
-    });
-};
-
-exports.saveToDB = function(obj, callback){
-    console.log("exports.saveToDB");
-    MongoClient.connect(url, function(err, db) {
-        assert.equal(null, err);
-        var collection = db.collection('odums');
-        collection.updateOne({ _id : obj._id }, obj, { upsert : true }, function (err, result) {
-            if (callback)
-                callback(obj);
-        });
-        db.close();
-    });
-};
-
-exports.findAllRecipients = function(obj, callback){
-    console.log("exports.saveRecipient");
-    MongoClient.connect(url, function(err, db) {
-        assert.equal(null, err);
-        var collection = db.collection('recipients');
-        collection.find({}, function (err, result) {
+                cb(err);
             result.toArray(function (err, arr) {
-                if (callback) {
-                        callback(arr);
-                } else {
-                    db.close();
-                    return arr;
-                }
+                if (err)
+                    cb(err);
+                cb(arr);
             });
         });
         db.close();
     });
 };
 
-exports.saveRecipient = function(obj, callback){
+exports.saveToDB = function(cb, obj){
+    console.log("exports.saveToDB");
+    MongoClient.connect(url, function(err, db) {
+        assert.equal(null, err);
+        var collection = db.collection('odums');
+        collection.updateOne({ _id : obj._id }, obj, { upsert : true }, function (err, result) {
+                db.close();
+                cb(obj);
+        });
+    });
+};
+
+exports.findAllRecipients = function(cb){
+    console.log("exports.saveRecipient");
+    MongoClient.connect(url, function(err, db) {
+        assert.equal(null, err);
+        var collection = db.collection('recipients');
+        collection.find({}, function (err, result) {
+            if (err) {
+                db.close();
+                cb(err);
+            } else {
+                result.toArray(function (err, arr) {
+                    db.close();
+                    if (err)
+                        cb(err);
+                    cb(arr);
+                });
+            }
+        });
+    });
+};
+
+exports.saveRecipient = function(cb, obj){
     console.log("exports.saveRecipient");
     MongoClient.connect(url, function(err, db) {
         assert.equal(null, err);
         var collection = db.collection('recipients');
         collection.updateOne({ _id : obj._id }, obj, { upsert : true }, function (err, result) {
-            if (callback)
-                callback(obj);
+            db.close();
+            cb(obj);
         });
-        db.close();
     });
 };
 
-exports.deleteRecipient = function(obj, callback){
+exports.deleteRecipient = function(cb, obj){
     console.log("exports.saveRecipient");
     MongoClient.connect(url, function(err, db) {
         assert.equal(null, err);
         var collection = db.collection('recipients');
         collection.deleteOne({ _id : obj._id }, obj, { upsert : true }, function (err, result) {
-            if (callback)
-                callback(obj);
+            db.close();
+            if (err)
+                cb(err);
+            cb(result);
         });
-        db.close();
     });
 };
 

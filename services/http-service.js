@@ -23,7 +23,7 @@ let login_post_data = `do=login&vb_login_md5password=${sensitive.forum.vb_login_
 
 exports.headers = null;
 
-exports.doLogin = function (callback) {
+exports.doLogin = function (cb) {
     console.log("exports.doLogin");
     var post_options = {
         host: 'www.chw.net',
@@ -46,17 +46,20 @@ exports.doLogin = function (callback) {
         res.on('data', function (chunk) {
             exports.headers = res.headers;
         }).on('end', function() {
-            if (callback)
-                callback();
-        })
+            cb(true);
+        });
     });
-
+    post_req.on('error', function(err) {
+        if (err) {
+            console.error(err);
+            cb(err);
+        }
+    });
     post_req.write(login_post_data);
     post_req.end();
 };
 
 exports.getOdums = function (cb) {
-    var result = true;
     var strCookies = "";
     for (var i = 0; i < exports.headers["set-cookie"].length; i++)
         strCookies += exports.headers["set-cookie"][i] + "; ";
@@ -76,21 +79,19 @@ exports.getOdums = function (cb) {
     };
     var req = http.get(options, function(res) {
         var bodyChunks = [];
-        //res.setEncoding('utf8');
         res.on('data', function(chunk) {
             bodyChunks.push(chunk);
         }).on('end', function() {
-            var body = Buffer.concat(bodyChunks).toString('latin1');
-            cb(utilService.parseaHTMLOdums(body));
+            cb(Buffer.concat(bodyChunks).toString('latin1'));
         });
     });
     req.on('error', function(e) {
-        console.log('ERROR: ' + e.message);
+        console.error(e);
+        cb(e);
     });
 };
 
-
-exports.getOdumDetails = function (obj, cb) {
+exports.getOdumDetails = function (cb, obj) {
     var urlObj = utilService.splitUrl(obj.url);
     console.log("exports.getOdumDetails: " + obj.url);
     var strCookies = "";
@@ -129,15 +130,15 @@ exports.getOdumDetails = function (obj, cb) {
 
 bot.onText(/\/start/, (msg) => {
     const chatId = msg.chat.id;
-    bot.sendMessage(chatId, "Use '/register {pass}' to register.");
+    bot.sendMessage(chatId, "Escribe '/register {pass}' para registrarte.");
 });
 
-bot.onText(/\/register (.+)/, (msg, match) => {
+bot.onText(/\/register (.+)/, async (msg, match) => {
     const chatId = msg.chat.id;
     const resp = match[1];
     const text = "Ahora recibirás notificaciones con ofertas, para desuscribirte escribe /deregister";
     if (resp === pass)
-        dataService.saveRecipient({
+        await dataService.saveRecipient({
             "_id" : chatId,
             "chatId" : chatId,
             "username" : msg.from.username,
@@ -153,7 +154,7 @@ bot.onText(/\/register (.+)/, (msg, match) => {
         });
     else {
         console.log("exports.register nook " + chatId);
-        bot.sendMessage(chatId, "Wrong password.");
+        bot.sendMessage(chatId, "Pass incorrecta.");
     }
 });
 
@@ -169,14 +170,13 @@ bot.onText(/\/deregister/, (msg, match) => {
         });
 });
 
-exports.sendTelegramMessage = function (obj, callback) {
+exports.sendTelegramMessage = function (cb, obj) {
     console.log("exports.sendTelegramMessage");
     let body = obj.titulo + '\n' + ((obj.post) ? obj.post : obj.desc);
-    dataService.findAllRecipients(null, function ( recipients) {
+    dataService.findAllRecipients(function ( recipients) {
         for (var i in recipients)
             bot.sendMessage(recipients[i].chatId, body);
     });
-    if (callback)
-        callback(obj);
+    cb(obj);
 };
 
