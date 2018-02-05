@@ -1,6 +1,5 @@
 var exports = module.exports = {};
 var cheerio = require("cheerio");
-const console = require("./console.js");
 
 exports.asyncWrapper = async function(func, args) {
     if (!args) args = [];
@@ -13,6 +12,10 @@ exports.asyncWrapper = async function(func, args) {
                 resolve(value);
         });
         func.apply(this, args);
+    }).then(function () {
+        console.log("Promise Resolved");
+    }).catch(function () {
+        console.log("Promise Rejected");
     });
 };
 

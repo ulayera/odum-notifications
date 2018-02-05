@@ -8,7 +8,6 @@ const pass = envService.getEnv('REGISTER_PASS');
 const chatId = envService.getEnv('TELEGRAM_BOT_CHAT_ID');
 const bot = new TelegramBot(token, {polling: true});
 const utilService = require("./util-service.js");
-const console = require("./console.js");
 const { URL } = require('url');
 const sensitive = {
     "forum" : {
@@ -138,19 +137,19 @@ bot.onText(/\/register (.+)/, async (msg, match) => {
     const resp = match[1];
     const text = "Ahora recibirás notificaciones con ofertas, para desuscribirte escribe /deregister";
     if (resp === pass)
-        await dataService.saveRecipient({
-            "_id" : chatId,
-            "chatId" : chatId,
-            "username" : msg.from.username,
-            "firstName" : msg.from.first_name,
-            "lastName" : msg.from.last_name
-        }, function () {
+        await dataService.saveRecipient(function () {
             bot.sendMessage(chatId, "Bienvenido " +
                 ((msg.from.first_name) ? " " + msg.from.first_name : "")  +
                 ((msg.from.last_name) ? " " + msg.from.last_name : "")  +
                 "! " + text);
             console.log("exports.register ok " + chatId + ", name: " +
                 msg.from.first_name + " " + msg.from.last_name + ", username: " + msg.from.username);
+        }, {
+            "_id" : chatId,
+            "chatId" : chatId,
+            "username" : msg.from.username,
+            "firstName" : msg.from.first_name,
+            "lastName" : msg.from.last_name
         });
     else {
         console.log("exports.register nook " + chatId);

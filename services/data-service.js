@@ -1,7 +1,6 @@
 var exports = module.exports = {};
 var envService = require("./env-service.js");
 var MongoClient = require('mongodb').MongoClient, assert = require('assert');
-const console = require("./console.js");
 const sensitive = {
     "db": {
         "user":     envService.getEnv('DB_USER'),
@@ -43,7 +42,7 @@ exports.saveToDB = function(cb, obj){
 };
 
 exports.findAllRecipients = function(cb){
-    console.log("exports.saveRecipient");
+    console.log("exports.findAllRecipients");
     MongoClient.connect(url, function(err, db) {
         assert.equal(null, err);
         var collection = db.collection('recipients');
@@ -64,7 +63,7 @@ exports.findAllRecipients = function(cb){
 };
 
 exports.saveRecipient = function(cb, obj){
-    console.log("exports.saveRecipient");
+    console.log("exports.saveRecipient " + obj);
     MongoClient.connect(url, function(err, db) {
         assert.equal(null, err);
         var collection = db.collection('recipients');
@@ -76,7 +75,7 @@ exports.saveRecipient = function(cb, obj){
 };
 
 exports.deleteRecipient = function(cb, obj){
-    console.log("exports.saveRecipient");
+    console.log("exports.deleteRecipient " + obj);
     MongoClient.connect(url, function(err, db) {
         assert.equal(null, err);
         var collection = db.collection('recipients');
@@ -89,3 +88,32 @@ exports.deleteRecipient = function(cb, obj){
     });
 };
 
+
+exports.addLog = function(obj){
+    MongoClient.connect(url, function(err, db) {
+        assert.equal(null, err);
+        var collection = db.collection('logs');
+        collection.insertOne(obj);
+    });
+};
+
+
+exports.findAllLogs = function(cb){
+    MongoClient.connect(url, function(err, db) {
+        assert.equal(null, err);
+        var collection = db.collection('logs');
+        collection.find({}, function (err, result) {
+            if (err) {
+                db.close();
+                cb(err);
+            } else {
+                result.toArray(function (err, arr) {
+                    db.close();
+                    if (err)
+                        cb(err);
+                    cb(arr);
+                });
+            }
+        });
+    });
+};
