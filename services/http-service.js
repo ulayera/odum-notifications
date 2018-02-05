@@ -140,11 +140,16 @@ bot.onText(/\/register (.+)/, (msg, match) => {
         dataService.saveRecipient({
             "_id" : chatId,
             "chatId" : chatId,
+            "username" : msg.from.username,
             "firstName" : msg.from.first_name,
             "lastName" : msg.from.last_name
         }, function () {
-            bot.sendMessage(chatId, "Bienvenido " + msg.from.first_name + " " + msg.from.last_name + "! " + text);
-            console.log("exports.register ok " + chatId);
+            bot.sendMessage(chatId, "Bienvenido " +
+                ((msg.from.first_name) ? " " + msg.from.first_name : "")  +
+                ((msg.from.last_name) ? " " + msg.from.last_name : "")  +
+                "! " + text);
+            console.log("exports.register ok " + chatId + ", name: " +
+                msg.from.first_name + " " + msg.from.last_name + ", username: " + msg.from.username);
         });
     else {
         console.log("exports.register nook " + chatId);
