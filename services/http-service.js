@@ -5,10 +5,8 @@ var envService = require("./env-service.js");
 const dataService = require("./data-service.js");
 const token = envService.getEnv('TELEGRAM_BOT_TOKEN');
 const pass = envService.getEnv('REGISTER_PASS');
-const chatId = envService.getEnv('TELEGRAM_BOT_CHAT_ID');
 const bot = new TelegramBot(token, {polling: true});
 const utilService = require("./util-service.js");
-const { URL } = require('url');
 const sensitive = {
     "forum" : {
         "vb_login_md5password" : envService.getEnv('FORUM_MD5PASS'),
@@ -23,7 +21,6 @@ let login_post_data = `do=login&vb_login_md5password=${sensitive.forum.vb_login_
 exports.headers = null;
 
 exports.doLogin = function (cb) {
-    console.log("exports.doLogin");
     var post_options = {
         host: 'www.chw.net',
         port: '80',
@@ -92,7 +89,6 @@ exports.getOdums = function (cb) {
 
 exports.getOdumDetails = function (cb, obj) {
     var urlObj = utilService.splitUrl(obj.url);
-    console.log("exports.getOdumDetails: " + obj.url);
     var strCookies = "";
     for (var i = 0; i < exports.headers["set-cookie"].length; i++)
         strCookies += exports.headers["set-cookie"][i] + "; ";
@@ -142,8 +138,6 @@ bot.onText(/\/register (.+)/, async (msg, match) => {
                 ((msg.from.first_name) ? " " + msg.from.first_name : "")  +
                 ((msg.from.last_name) ? " " + msg.from.last_name : "")  +
                 "! " + text);
-            console.log("exports.register ok " + chatId + ", name: " +
-                msg.from.first_name + " " + msg.from.last_name + ", username: " + msg.from.username);
         }, {
             "_id" : chatId,
             "chatId" : chatId,
@@ -152,7 +146,6 @@ bot.onText(/\/register (.+)/, async (msg, match) => {
             "lastName" : msg.from.last_name
         });
     else {
-        console.log("exports.register nook " + chatId);
         bot.sendMessage(chatId, "Pass incorrecta.");
     }
 });
@@ -160,7 +153,6 @@ bot.onText(/\/register (.+)/, async (msg, match) => {
 
 bot.onText(/\/deregister/, (msg, match) => {
     const chatId = msg.chat.id;
-    console.log("exports.deregister " + chatId);
         dataService.deleteRecipient({
             "_id" : chatId,
             "chatId" : chatId
@@ -170,12 +162,12 @@ bot.onText(/\/deregister/, (msg, match) => {
 });
 
 exports.sendTelegramMessage = function (cb, obj) {
-    console.log("exports.sendTelegramMessage");
     let body = obj.titulo + '\n' + ((obj.post) ? obj.post : obj.desc);
-    dataService.findAllRecipients(function ( recipients) {
-        for (var i in recipients)
-            bot.sendMessage(recipients[i].chatId, body);
+    dataService.findAllRecipients(async function (recipients) {
+        for (var i in recipients) {
+            await bot.sendMessage(recipients[i].chatId, body);
+            cb(obj);
+        }
     });
-    cb(obj);
 };
 

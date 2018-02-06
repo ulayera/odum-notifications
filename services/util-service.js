@@ -3,19 +3,15 @@ var cheerio = require("cheerio");
 
 exports.asyncWrapper = async function(func, args) {
     if (!args) args = [];
-
     return new Promise((resolve, reject) => {
         args.unshift(function (value) {
-            if (value instanceof Error)
+            if (value instanceof Error) {
                 reject(value);
-            else
+            } else {
                 resolve(value);
+            }
         });
         func.apply(this, args);
-    }).then(function () {
-        console.log("Promise Resolved");
-    }).catch(function () {
-        console.log("Promise Rejected");
     });
 };
 
@@ -115,4 +111,13 @@ exports.compareOdumsById = function (a,b) {
     if (ida < idb)
         return -1;
     return 0;
+};
+
+exports.compareDates = function(a,b){
+    if (b.getTime() < a.getTime())
+        return -1;
+    else if (a.getTime() < b.getTime())
+        return 1;
+    else
+        return 0;
 };

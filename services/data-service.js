@@ -29,20 +29,21 @@ exports.getOdumsByIdlist = function(cb, idList){
     });
 };
 
-exports.saveToDB = function(cb, obj){
-    console.log("exports.saveToDB");
-    MongoClient.connect(url, function(err, db) {
+exports.saveToDB = async function(cb, obj){
+    MongoClient.connect(url, async function(err, db) {
         assert.equal(null, err);
         var collection = db.collection('odums');
-        collection.updateOne({ _id : obj._id }, obj, { upsert : true }, function (err, result) {
-                db.close();
-                cb(obj);
+        await collection.updateOne({ _id : obj._id }, obj, { upsert : true }, function (err, result) {
+            db.close();
+            if (err)
+                cb(err);
+            else
+                cb(result);
         });
     });
 };
 
 exports.findAllRecipients = function(cb){
-    console.log("exports.findAllRecipients");
     MongoClient.connect(url, function(err, db) {
         assert.equal(null, err);
         var collection = db.collection('recipients');
@@ -63,7 +64,6 @@ exports.findAllRecipients = function(cb){
 };
 
 exports.saveRecipient = function(cb, obj){
-    console.log("exports.saveRecipient " + obj);
     MongoClient.connect(url, function(err, db) {
         assert.equal(null, err);
         var collection = db.collection('recipients');
@@ -75,7 +75,6 @@ exports.saveRecipient = function(cb, obj){
 };
 
 exports.deleteRecipient = function(cb, obj){
-    console.log("exports.deleteRecipient " + obj);
     MongoClient.connect(url, function(err, db) {
         assert.equal(null, err);
         var collection = db.collection('recipients');
