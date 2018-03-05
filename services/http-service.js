@@ -180,8 +180,8 @@ bot.onText(/\/sources list/, async (msg) => {
 
 bot.onText(/\/mysources list/, (msg) => {
   const chatId = msg.chat.id;
-  dataService.getRecipientSources(async function (sources) {
-    await bot.sendMessage(chatId, (sources.toString()) ? sources.toString() : "No estas suscrito a ninguna fuente.");
+  dataService.getRecipient(async function (recipient) {
+    await bot.sendMessage(chatId, (recipient.sources.toString()) ? recipient.sources.toString() : "No estas suscrito a ninguna fuente.");
   }, {
     "_id": chatId
   });
@@ -227,16 +227,13 @@ bot.onText(/\/deregister/, (msg, match) => {
 exports.sendTelegramMessage = async function (cb, obj) {
   let body = obj.source + ": " + obj.titulo + '\n' + ((obj.post) ? obj.post : obj.desc);
   dataService.findAllRecipients(async function (recipients) {
-    for (var i in recipients) {
-      var chatId = recipients[i].chatId;
-      dataService.getRecipient(async function (recipient) {
-        if (recipient.sources.indexOf(obj.source) !== -1)
-          await bot.sendMessage(chatId, body);
-        cb(obj);
-      }, {
-        "_id": chatId
-      });
+    for (let i in recipients) {
+      let recipient = recipients[i];
+      let chatId = recipient.chatId;
+      if (recipient.sources.indexOf(obj.source) !== -1)
+        await bot.sendMessage(chatId, body);
     }
+    cb(obj);
   });
 };
 
@@ -244,15 +241,11 @@ exports.sendTelegramMessage = async function (cb, obj) {
 dataService.findAllRecipients(async function (recipients) {
   for (var i in recipients) {
     var chatId = recipients[i].chatId;
-    dataService.getRecipient(async function (recipient) {
-      if (!recipient.notifiedVersion || recipient.notifiedVersion < currentVersion.number) {
-        await bot.sendMessage(chatId, currentVersion.text);
-        console.log("Welcomed to version 2: " + recipient.firstName);
-        recipient.notifiedVersion = currentVersion.number;
-        dataService.saveRecipient(function(){}, recipient);
-      }
-    }, {
-      "_id": chatId
-    });
+    if (!recipients[i].notifiedVersion || recipients[i].notifiedVersion < currentVersion.number) {
+      await bot.sendMessage(chatId, currentVersion.text);
+      console.log("Welcomed to version 2: " + recipients[i].firstName);
+      recipients[i].notifiedVersion = currentVersion.number;
+      dataService.saveRecipient(function(){}, recipients[i]);
+    }
   }
 });
