@@ -15,7 +15,7 @@ exports.asyncWrapper = async function(func, args) {
     });
 };
 
-exports.parseaHTMLOdums = function (body) {
+exports.parseaHTMLOdums = function (body, foro) {
     const $ = cheerio.load(body);
     var output = [];
     var hilos = $("#threads li");
@@ -27,7 +27,8 @@ exports.parseaHTMLOdums = function (body) {
                 "autor" : $("a.username")[0].children[0].data,
                 "titulo" : $("a.title")[0].children[0].data,
                 "desc" :  $("div.threadinfo")[0].attribs.title,
-                "url" :  $("a.title")[0].attribs.href
+                "url" :  $("a.title")[0].attribs.href,
+                "source" : foro
             };
             output.push(obj);
         } catch (e) {

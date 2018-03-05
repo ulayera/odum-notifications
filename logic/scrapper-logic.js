@@ -10,9 +10,9 @@ exports.isLoggedIn = function () {
     return exports.httpService.headers !== null;
 };
 
-exports.getOdumsWeb = async function () {
-    let odumsWebRaw = await exports.utilService.asyncWrapper(exports.httpService.getOdums);
-    return exports.utilService.parseaHTMLOdums(odumsWebRaw);
+exports.getOdumsWeb = async function (foro) {
+    let odumsWebRaw = await exports.utilService.asyncWrapper(exports.httpService.getOdums, [foro]);
+    return exports.utilService.parseaHTMLOdums(odumsWebRaw, foro);
 };
 
 exports.getOdumsDB = async function (odumsWeb) {

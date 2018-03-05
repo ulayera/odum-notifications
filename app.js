@@ -20,17 +20,16 @@ app.listen(port, () => {
     console.log(`${name} is listening on port ${port}`);
 });
 
-async function logic() {
+async function chwLogic(foro) {
     if (!scrapperLogic.isLoggedIn())
         await scrapperLogic.utilService.asyncWrapper(scrapperLogic.doLogin);
     if (scrapperLogic.isLoggedIn()) {
-        let odumsWeb = await scrapperLogic.getOdumsWeb();
+        let odumsWeb = await scrapperLogic.getOdumsWeb(foro);
         let odumsDB = await scrapperLogic.getOdumsDB(odumsWeb);
         let odums = scrapperLogic.mergeOdums(
             odumsWeb,
             odumsDB
         );
-        //odums = odums.sort(scrapperLogic.compareOdumsById);
         for (var i in odums) {
             let elem = odums[i];
             if (!elem.post)
@@ -45,6 +44,11 @@ async function logic() {
             }
         }
     }
+}
+
+function logic() {
+  chwLogic("odums");
+  chwLogic("papas");
 }
 
 logic();
